@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/css/main.css">
+    <title>Management</title>
+</head>
+<body>
+
+    <app-header></app-header>
+
+    <app-nav></app-nav>
+
+    <div class="content">
+        <app-main>...loading</app-main>
+    </div>
+
+
+
+
+    <script src="/libs/polyfill.js"></script>
+    <script src="/libs/system.js"></script>
+
+    <script>
+      // set our baseURL reference path/
+      System.config({
+        baseURL: "/",
+        map: {
+          native: 'js/native.min.js'
+        },
+        meta: {
+          // our modules have been transpiled to commonJS
+          '*': {
+            format: 'cjs'
+          }
+        }
+      });
+      System.import('native')
+        .then(function({ Native }) {
+          Native.init();
+        }, console.error.bind(console));
+    </script>
+</body>
+</html>
