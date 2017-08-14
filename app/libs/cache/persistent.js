@@ -14,42 +14,57 @@
  */
 
 let id;
-let lifeTime = {};
+const data = {};
+
+const lifeTimeRAM = {};
+const lifeTimeLocalStorage = {};
+
+let busySizeRAM = 0;
 let busySizeLocalStorage = 0;
+
+let maxSizeRAM = 0;
+let maxSizeLocalStorage = 0;
 
 class Persistent {
 
-  constructor(maxSizeRAM, maxSizeLocalStorage, curId) {
+  constructor(curMaxSizeRAM, curMaxSizeLocalStorage, curId) {
     id = curId;
-    this.maxSizeLocalStorage = maxSizeLocalStorage;
-    this.maxSizeRAM = maxSizeRAM;
+    maxSizeRAM = curMaxSizeRAM;
+    maxSizeLocalStorage = curMaxSizeLocalStorage;
   }
 
+  get id() { return id };
+  get maxSizeRAM() { return maxSizeRAM };
+  get maxSizeLocalStorage() { return maxSizeLocalStorage };
+
+  get RAM() { return data }; 
+  get localStorage() { return JSON.parse(localStorage.getItem(id))};
+
+  get freeMemoryRAM() { return (maxSizeRAM - busySizeRAM); };
+  get freeMemoryLocalStorage() { return (maxSizeLocalStorage - busySizeLocalStorage); };
 
 
-  get freeMemoryLocalStorage() { return (this.maxSizeLocalStorage - busySizeLocalStorage); }
 
 
 
-  insertLocalStorage(key, data) {
-    const sizeData = Persistent._roughSizeOfObject(data);
+  _insertLocalStorage(key, data, sizeData) {
     const freeSize = this.freeMemoryLocalStorage;
 
     if (sizeData < freeSize) {
 
-      this.setValues(key, data, JSON.parse(localStorage.getItem(id)) || {}, sizeData);
+      this._setValuesLocalStorage(key, data, JSON.parse(localStorage.getItem(id)) || {}, sizeData, lifeTimeLocalStorage);
 
-    } else if (sizeData < this.maxSizeLocalStorage) {
+    } else if (sizeData < maxSizeLocalStorage) {
 
-      const overwriting = Persistent.leastRecentlyUsed(lifeTime, sizeData - freeSize);
-      const values = this.allValues();
+      const overwriting = Persistent._leastRecentlyUsed(lifeTimeLocalStorage, sizeData - freeSize);
+      const values = this.localStorage();
 
       for (let [key, obj] of overwriting) {
         busySizeLocalStorage -= obj.size;
         delete values[key];
       }
 
-      this.setValues(key, data, values, sizeData);
+      this._setValuesLocalStorage(key, data, values, sizeData);
 
     } else {
       console.log('Max size localStorage is less than this data');
@@ -57,16 +72,15 @@ class Persistent {
 
   }
 
-  setValues(key, data, values, sizeData) {
+  _setValuesLocalStorage(key, data, values, sizeData, lifeTime) {
     values[key] = data;
     busySizeLocalStorage += sizeData;
-    this.setKeyLifeTime(key, sizeData);
-
+    this._setKeyLifeTime(key, sizeData, lifeTime);
     localStorage.setItem(id, JSON.stringify(values));
   }
 
 
-  setKeyLifeTime(key, sizeData) {
+  _setKeyLifeTime(key, sizeData, lifeTime) {
     lifeTime[key] = {
       size: sizeData ,
       time: new Date().getTime()
@@ -74,10 +88,9 @@ class Persistent {
   }
 
 
-  allValues() { return JSON.parse(localStorage.getItem(id))};
 
 
-  static leastRecentlyUsed(lifeTime, needSize) {
+  static _leastRecentlyUsed(lifeTime, needSize) {
 
     let result = [];
     let sortable = [];

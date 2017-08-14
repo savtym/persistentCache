@@ -3,7 +3,9 @@
 import Cache from 'cache';
 
 
-const sizeMemory = document.querySelectorAll('.max-size input');
+const sizeMemoryRAM = document.querySelector('[name="ram_size"]');
+const sizeMemoryLocal = document.querySelector('[name="local_size"]');
+
 const data = document.querySelectorAll('.full-data input');
 
 const btnAdd = '.btn-add';
@@ -14,11 +16,12 @@ const btnStop = '.btn-stop';
 
 
 const addFiled = `<div class="field">
-                        <input name="key[]" type="text" placeholder="key">
-                        <input name="value[]" type="text" placeholder="value">
+                        <input name="key" type="text" placeholder="key">
+                        <input name="value" type="text" placeholder="value">
                         <button class="btn btn-remove">Remove</button>
                     </div>`;
 
+const randomSize = 10000;
 
 
 export class Main {
@@ -49,9 +52,21 @@ export class Main {
 
 
   startTest() {
-    debugger
-    const cache = new Cache();
-    console.log(Cache.freeSize());
+
+    const sizeRAM = sizeMemoryRAM.value;
+    const sizeLocal = sizeMemoryLocal.value;
+
+    const cache = new Cache(sizeRAM, sizeLocal);
+    console.log(cache);
+
+    if (document.querySelector('[name="full_data"]:checked').value === 'insert') {
+      const keys = document.querySelectorAll('.fields [name="key"]');
+      const values = document.querySelectorAll('.fields [name="value"]');
+      
+      for (let i = 0; i < keys.length; i++) {
+        
+      }
+    }
   }
 
 

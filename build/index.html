@@ -14,8 +14,8 @@
         <div class="col-6">
             <div class="max-size">
                 <h2>Max size for memory</h2>
-                <input name="ram_size" type="number" placeholder="RAM size memory">
-                <input name="local_size" type="number" placeholder="Local size memory">
+                <input name="ram_size" type="number" min="0" placeholder="RAM size memory">
+                <input name="local_size" type="number" min="0" placeholder="Local size memory">
             </div>
 
             <div class="full-data">
@@ -24,7 +24,8 @@
                 <div class="random">
                     <div class="radio">
                         <label for="radio-random">Random</label>
-                        <input id="radio-random" type="radio" name="full_data" checked>
+                        <input id="radio-random" type="radio" name="full_data" value="random" checked>
+                        <div class="check"></div>
                     </div>
                 </div>
 
@@ -34,13 +35,14 @@
 
                     <div class="radio">
                         <label for="radio-insert">Insert Values</label>
-                        <input id="radio-insert" type="radio" name="full_data">
+                        <input id="radio-insert" type="radio" name="full_data" value="insert">
+                        <div class="check"></div>
                     </div>
 
                     <div class="fields">
                         <div class="field">
-                            <input name="key[]" type="text" placeholder="key">
-                            <input name="value[]" type="text" placeholder="value">
+                            <input name="key" type="text" placeholder="key">
+                            <input name="value" type="text" placeholder="value">
                             <button class="btn btn-remove">Remove</button>
                         </div>
                     </div>

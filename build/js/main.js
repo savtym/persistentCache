@@ -15,7 +15,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var sizeMemory = document.querySelectorAll('.max-size input');
+var sizeMemoryRAM = document.querySelector('[name="ram_size"]');
+var sizeMemoryLocal = document.querySelector('[name="local_size"]');
+
 var data = document.querySelectorAll('.full-data input');
 
 var btnAdd = '.btn-add';
@@ -24,7 +26,9 @@ var btnRemove = '.btn-remove';
 var btnStart = '.btn-start';
 var btnStop = '.btn-stop';
 
-var _addFiled = '<div class="field">\n                        <input name="key[]" type="text" placeholder="key">\n                        <input name="value[]" type="text" placeholder="value">\n                        <button class="btn btn-remove">Remove</button>\n                    </div>';
+var _addFiled = '<div class="field">\n                        <input name="key" type="text" placeholder="key">\n                        <input name="value" type="text" placeholder="value">\n                        <button class="btn btn-remove">Remove</button>\n                    </div>';
+
+var randomSize = 10000;
 
 var Main = exports.Main = function () {
   function Main() {
@@ -54,9 +58,19 @@ var Main = exports.Main = function () {
   }, {
     key: 'startTest',
     value: function startTest() {
-      debugger;
-      var cache = new _cache2.default();
-      console.log(_cache2.default.freeSize());
+
+      var sizeRAM = sizeMemoryRAM.value;
+      var sizeLocal = sizeMemoryLocal.value;
+
+      var cache = new _cache2.default(sizeRAM, sizeLocal);
+      console.log(cache);
+
+      if (document.querySelector('[name="full_data"]:checked').value === 'insert') {
+        var keys = document.querySelectorAll('.fields [name="key"]');
+        var values = document.querySelectorAll('.fields [name="value"]');
+
+        for (var i = 0; i < keys.length; i++) {}
+      }
     }
   }, {
     key: 'stopTest',
