@@ -124,12 +124,7 @@ h4 {
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
-  -ms-touch-action: manipulation;
-  touch-action: manipulation;
   cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   background-image: none;
   border: 1px solid transparent;
@@ -151,6 +146,9 @@ h4 {
     .btn.btn-remove:hover {
       background-color: #c9302c;
       border-color: #ac2925; }
+  .btn.active {
+    cursor: default;
+    background-color: #888; }
 
 input[type="text"],
 input[type="number"] {
@@ -174,6 +172,9 @@ input[type="number"] {
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }
+  input[type="text"].error,
+  input[type="number"].error {
+    border-color: #d9534f; }
 
 /*  radio input  */
 .radio,
@@ -228,6 +229,17 @@ input[type="number"] {
     .checkbox input:checked ~ .check::before {
       background: #286090; }
 
+/* table */
+table {
+  width: 100%;
+  border-collapse: collapse; }
+  table th,
+  table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd; }
+  table tr:hover {
+    background: #ddd; }
+
 /* index */
 .content {
   position: relative;
@@ -264,8 +276,6 @@ input[type="number"] {
   clear: both; }
 
 .test .current-data > div {
-  float: left;
-  width: 50%;
   text-align: center; }
   .test .current-data > div h3 {
     margin-top: 0; }
@@ -293,9 +303,10 @@ input[type="number"] {
   padding: 0;
   border-radius: 50%; }
 
+.test .buttons {
+  margin-top: 20px; }
+
 /* grid */
 .col-6 {
-  float: left; }
-
-.col-6 {
+  float: left;
   width: 50%; }

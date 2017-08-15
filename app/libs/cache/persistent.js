@@ -3,20 +3,43 @@
 //
 
 let counterRequest = 0;
+let maxMemoryDefault = 16384;
 
 class Persistent {
 
   constructor(curId, curMaxSize) {
     this._id = curId;
-    this._maxMemory = curMaxSize;
-    this._busyMemory = 0;
+    this.maxMemory = curMaxSize || maxMemoryDefault;
     this._lifeTime = {};
+
+    this.data() || localStorage.setItem(this._id, '{}');
   }
 
   get maxMemory() { return this._maxMemory; };
-  get busyMemory() { return this._busyMemory; };
-  get freeMemory() { return (this._maxMemory - this._busyMemory); };
+  get busyMemory() { return (Storage.sizeOf(localStorage.getItem(this._id))); };
+  get freeMemory() { return (this._maxMemory - Storage.sizeOf(localStorage.getItem(this._id))); };
 
+
+  set maxMemory(value) {
+    value = (typeof value === 'number') ? value : parseInt(value);
+
+    if (!isNaN(value) && value >= 0) {
+      this._maxMemory = value;
+
+      if (value < this.busyMemory) {
+        const overwriting = Storage._leastRecentlyUsed(this._lifeTime, this.busyMemory - value);
+        const values = this.data();
+
+        for (let [key, obj] of overwriting) {
+          delete this._lifeTime[key];
+          delete values[key];
+        }
+
+        counterRequest++;
+        localStorage.setItem(this._id, JSON.stringify(values));
+      }
+    }
+  }
 
   /*
   *   Get data from Local Storage by key
@@ -48,23 +71,21 @@ class Persistent {
     const freeSize = this.freeMemory;
     const values = this.data();
 
-    if (values && values[key] && JSON.stringify(values[key]) === JSON.stringify(data)) {
+    if (typeof values[key] !== 'undefined'
+      && JSON.stringify(values[key]) === JSON.stringify(data)) {
       Storage._setKeyLifeTime(key, sizeData, this._lifeTime);
       return;
     }
 
     if (sizeData < freeSize) {
-
-      counterRequest++;
-      this._setValuesLocalStorage(key, data, values || {}, sizeData);
-
+      this._setValuesLocalStorage(key, data, values, sizeData);
     } else if (sizeData < this._maxMemory) {
 
       const overwriting = Storage._leastRecentlyUsed(this._lifeTime, sizeData - freeSize);
       const values = this.data();
 
       for (let [key, obj] of overwriting) {
-        this._busyMemory -= obj.size;
+        delete this._lifeTime[key];
         delete values[key];
       }
 
@@ -87,7 +108,6 @@ class Persistent {
     const values = this.data();
 
     if (values[key]) {
-      this._busyMemory -= this._lifeTime[key].size;
       delete values[key];
       counterRequest++;
       localStorage.setItem(this._id, JSON.stringify(values));
@@ -110,7 +130,6 @@ class Persistent {
 
   _setValuesLocalStorage(key, data, values, sizeData) {
     values[key] = data;
-    this._busyMemory += sizeData;
     Storage._setKeyLifeTime(key, sizeData, this._lifeTime);
     counterRequest++;
     localStorage.setItem(this._id, JSON.stringify(values));

@@ -5,63 +5,37 @@
 const globalSizeLocal = 5242880; // 5MB
 
 let idMemory = 1;
-let currentSizeMemoryRAM = 0;
-let currentSizeMemoryPersistent = 0;
 
-let defaultSizeRAM = 16384;
-let defaultSizeLocal = 16384;
 
 let storages = {};
 
 
 export default class Storage {
 
-  constructor(sizeRAM = 16384, sizeLocal = 16384) {
-
-    sizeRAM = parseInt(sizeRAM);
-    sizeLocal = parseInt(sizeLocal);
-
-    sizeRAM = (isNaN(sizeRAM) || sizeRAM < 0) ? defaultSizeRAM : sizeRAM;
-    sizeLocal = (isNaN(sizeLocal) || sizeLocal < 0) ? defaultSizeLocal : sizeLocal;
+  constructor({ sizeRAM, sizeLocal, id = idMemory }) {
 
     if (Storage.freeMemoryLocal < sizeLocal) {
       throw 'Memory is full, clear cache!';
     }
 
 
-    this._id = idMemory;
+    this._id = id;
     this._ram = new RAM(sizeRAM);
-    this._persistent = new Persistent(idMemory, sizeLocal);
+    this._persistent = new Persistent(id, sizeLocal);
 
-    currentSizeMemoryRAM += sizeRAM;
-    currentSizeMemoryPersistent += sizeLocal;
+    storages[id] = this;
 
-    storages[idMemory++] = this;
+    if (idMemory === id) {
+      idMemory++;
+    }
   }
 
 
   get id() { return this._id };
 
-	get freeMemory() {
-		return {
-			ram: this._ram.freeMemory,
-			persistent: this._persistent.freeMemory
-    };
-	}
+  get ram() { return this._ram };
+  get persistent() { return this._persistent };
 
-  get busyMemory() {
-    return {
-      ram: this._ram.busyMemory,
-      persistent: this._persistent.busyMemory
-    };
-  }
-
-	get maxMemory() {
-		return {
-      ram: this._ram.maxMemory,
-      persistent: this._persistent.maxMemory
-		};
-	}
 
 
 	/*
@@ -72,29 +46,28 @@ export default class Storage {
 
 	data(key) {
 
-		if (typeof key !== 'string') {
-			throw 'Key is not string';
-		}
 
 		let result;
 		const busyMemory = this.busyMemory;
 
-		if (key) {
+		if (typeof key !== 'undefined') {
 
-      result = this._ram.data(key);
+      key = (typeof key === 'string') ? key : key.toString();
 
-      if (result) {
-        result = this._persistent.data(key);
+      result = this.ram.data(key);
+
+      if (!result) {
+        result = this.persistent.data(key);
+        if (result) {
+          this.ram.insert(key, result, Storage.sizeOf(result))
+        }
 			}
 
 		} else {
-
-      if (busyMemory.ram >= busyMemory.persistent) {
-        result = this._ram.data();
-      } else {
-        result = this._persistent.data();
-      }
-
+        result = {
+          ram: this.ram.data(),
+          persistent: this.persistent.data()
+        };
 		}
 
 		return result;
@@ -119,8 +92,8 @@ export default class Storage {
 
     key = (typeof key === 'string') ? key : key.toString();
 
-    this._ram.insert(key, data, Storage.sizeOf(data));
-    this._persistent.insert(key, data, Storage.sizeOf(JSON.stringify(data)));
+    this.ram.insert(key, data, Storage.sizeOf(data));
+    this.persistent.insert(key, data, Storage.sizeOf(JSON.stringify({key:data})));
 	}
 
 
@@ -134,8 +107,8 @@ export default class Storage {
 
     key = (typeof key === 'string') ? key : key.toString();
 
-    this._ram.remove(key);
-    this._persistent.remove(key);
+    this.ram.remove(key);
+    this.persistent.remove(key);
   }
 
 
@@ -146,8 +119,8 @@ export default class Storage {
 	 */
 
   clear() {
-    currentSizeMemoryRAM -= this._ram.maxMemory;
-    currentSizeMemoryPersistent -= this._persistent.maxMemory;
+    currentSizeMemoryRAM -= this.ram.maxMemory;
+    currentSizeMemoryPersistent -= this.persistent.maxMemory;
 
     localStorage.removeItem(this._id);
     delete storages[this._id];
@@ -181,7 +154,9 @@ export default class Storage {
 
   	if (storages[id]) {
   		storages[id].clear();
-		}
+		} else {
+      localStorage.removeItem(id);
+    }
 
 	}
 

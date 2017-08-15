@@ -1,9 +1,11 @@
 
 
+const maxMemoryDefault = 16384;
+
 class RAM {
 
 	constructor(curMaxSize) {
-    this._maxMemory = curMaxSize;
+    this.maxMemory = curMaxSize || maxMemoryDefault;
     this._busyMemory = 0;
     this._lifeTime = {};
     this._data = {};
@@ -12,7 +14,26 @@ class RAM {
 
   get maxMemory() { return this._maxMemory };
   get busyMemory() { return this._busyMemory };
-  get freeMemory() { return (this._maxMemory - this._busyMemory) };
+  get freeMemory() { return (this.maxMemory - this._busyMemory) };
+
+
+  set maxMemory(value) {
+    value = (typeof value === 'number') ? value : parseInt(value);
+
+    if (!isNaN(value) && value >= 0) {
+      this._maxMemory = value;
+
+      if (value < this.busyMemory) {
+        const overwriting = Storage._leastRecentlyUsed(this._lifeTime, this.busyMemory - value);
+
+        for (let [key, obj] of overwriting) {
+          this._busyMemory -= obj.size;
+          delete this._lifeTime[key];
+          delete this._data[key];
+        }
+      }
+    }
+  }
 
 
   /*
@@ -51,12 +72,13 @@ class RAM {
       this._busyMemory += sizeData;
       Storage._setKeyLifeTime(key, sizeData, this._lifeTime);
 
-    } else if (sizeData < this._maxMemory) {
+    } else if (sizeData < this.maxMemory) {
 
       const overwriting = Storage._leastRecentlyUsed(this._lifeTime, sizeData - freeSize);
 
       for (let [key, obj] of overwriting) {
         this._busyMemory -= obj.size;
+        delete this._lifeTime[key];
         delete this._data[key];
       }
 

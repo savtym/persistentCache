@@ -66,12 +66,11 @@
                     <div class="fields">
                         <div class="field">
                             <input name="key" type="text" placeholder="key">
-                            <input name="value" type="text" placeholder="value">
                             <button class="btn btn-remove insert">Remove</button>
                         </div>
                     </div>
 
-                    <button class="btn primary btn-add insert">Add</button>
+                    <button class="btn primary btn-add get">Add</button>
                 </div>
 
                 <div class="buttons">
@@ -97,9 +96,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <td>Key</td>
-                            <td>Size Memory</td>
-                            <td>Remove button</td>
+                            <th>Id</th>
+                            <th>Size Memory</th>
                         </tr>
                     </thead>
 
@@ -108,8 +106,58 @@
                 </table>
             </div>
 
-            <!-- dynamic change -->
-            <div class="caches"></div>
+            <div class="cache" data-id="test-drive">
+
+                <div class="counter">
+                    <h3>The number of stored key-value pairs in RAM: <span class="ram">0</span></h3>
+                    <h3>The number of stored key-value pairs in Local Storage: <span class="local">0</span></h3>
+                </div>
+
+                <div class="current-data">
+                    <h3>Current amount of stored data:</h3>
+
+                    <div class="circle-ram col-6">
+                        <h4>Free memory RAM</h4>
+                        <span class="circle"></span>
+                    </div>
+
+                    <div class="circle-persistent col-6">
+                        <h4>Free memory Persistent</h4>
+                        <span class="circle"></span>
+                    </div>
+                </div>
+
+                <div class="percent-cache">
+                    <h3>Counters and percent hit / miss cache</h3>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Insert Data</th>
+                                <th>Get Data</th>
+                                <th>Hit/Miss RAM</th>
+                            </tr>
+                        </thead>
+
+                        <!-- dynamic change -->
+                        <tbody>
+                            <tr class="last">
+                                <td>#</td>
+                                <td>#</td>
+                                <td class="counter-insert"></td>
+                                <td class="counter-get"></td>
+                                <td class="hit-miss"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="buttons">
+                    <span class="btn btn-remove">Remove cache</span>
+                </div>
+            </div>
 
         </div>
     </div>

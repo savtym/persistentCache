@@ -70,12 +70,7 @@ h4 {
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
-  -ms-touch-action: manipulation;
-  touch-action: manipulation;
   cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   background-image: none;
   border: 1px solid transparent;
@@ -104,6 +99,12 @@ h4 {
       border-color: #ac2925;
     }
   }
+
+  &.active {
+    cursor: default;
+    background-color: #888;
+  }
+
 }
 
 input[type="text"],
@@ -128,6 +129,10 @@ input[type="number"] {
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  }
+
+  &.error {
+    border-color: #d9534f;
   }
 }
 
@@ -193,7 +198,22 @@ input[type="number"] {
 
 }
 
+/* table */
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  tr:hover {
+    background: #ddd;
+  }
+}
 
 
 /* index */
@@ -238,12 +258,11 @@ input[type="number"] {
       }
     }
   }
+  
   .current-data {
     @include clearfix();
 
     & > div {
-      float: left;
-      width: 50%;
       text-align: center;
 
       h3 {
@@ -280,6 +299,10 @@ input[type="number"] {
     border-radius: 50%;
   }
 
+  .buttons {
+    margin-top: 20px;
+  }
+
 }
 
 
@@ -289,8 +312,6 @@ input[type="number"] {
 
 .col-6 {
   float: left;
-}
-
-.col-6 {
   width: 50%;
 }
+
