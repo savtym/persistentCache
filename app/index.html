@@ -14,64 +14,103 @@
         <div class="col-6">
             <div class="max-size">
                 <h2>Max size for memory</h2>
-                <input name="ram_size" type="number" min="0" placeholder="RAM size memory">
-                <input name="local_size" type="number" min="0" placeholder="Local size memory">
+                <input name="ram_size" type="number" min="0" placeholder="RAM size memory (bytes)">
+                <input name="local_size" type="number" min="0" placeholder="Local size memory (bytes)">
             </div>
 
-            <div class="full-data">
-                <h2>Data for work with cache</h2>
+            <!-- .insert-data -->
+            <div class="insert-data">
+                <h2>Insert data</h2>
 
                 <div class="random">
                     <div class="radio">
                         <label for="radio-random">Random</label>
                         <input id="radio-random" type="radio" name="full_data" value="random" checked>
-                        <div class="check"></div>
+                        <div class="check check-radio"></div>
                     </div>
                 </div>
 
-                <div class="insert">
-
-                    <h3></h3>
+                <div class="insert work-data">
 
                     <div class="radio">
                         <label for="radio-insert">Insert Values</label>
                         <input id="radio-insert" type="radio" name="full_data" value="insert">
-                        <div class="check"></div>
+                        <div class="check check-radio"></div>
                     </div>
 
                     <div class="fields">
                         <div class="field">
                             <input name="key" type="text" placeholder="key">
                             <input name="value" type="text" placeholder="value">
-                            <button class="btn btn-remove">Remove</button>
+                            <button class="btn btn-remove insert">Remove</button>
                         </div>
                     </div>
 
-                    <button class="btn primary btn-add">Add</button>
+                    <button class="btn btn-add insert">Add</button>
                 </div>
-
 
                 <div class="buttons">
                     <h3>Control buttons</h3>
+
+                    <button class="btn btn-start">Start</button>
+                    <button class="btn btn-stop">Stop</button>
+                </div>
+            </div>
+            <!-- end .insert-data -->
+
+            <!-- .get-data -->
+            <div class="get-data">
+                <h2>Get data</h2>
+
+                <div class="get work-data">
+                    <div class="fields">
+                        <div class="field">
+                            <input name="key" type="text" placeholder="key">
+                            <input name="value" type="text" placeholder="value">
+                            <button class="btn btn-remove insert">Remove</button>
+                        </div>
+                    </div>
+
+                    <button class="btn primary btn-add insert">Add</button>
+                </div>
+
+                <div class="buttons">
+                    <h3>Control buttons</h3>
+
                     <button class="btn btn-start">Start</button>
                     <button class="btn btn-stop">Stop</button>
                 </div>
             </div>
         </div>
+        <!-- end .get-data -->
 
 
-        <div class="col-6 view">
-            <div class="counter">
-
+        <div class="col-6 test">
+            <div class="circle-local">
+                <h2>Free memory Local Storage</h2>
+                <span class="circle"></span>
             </div>
 
-            <div class="current-data">
+            <div class="list-caches">
+                <h2>Memory in Local Storage</h2>
 
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Key</td>
+                            <td>Size Memory</td>
+                            <td>Remove button</td>
+                        </tr>
+                    </thead>
+
+                    <!-- dynamic change -->
+                    <tbody></tbody>
+                </table>
             </div>
 
-            <div class="percent-cache">
+            <!-- dynamic change -->
+            <div class="caches"></div>
 
-            </div>
         </div>
     </div>
 
@@ -87,7 +126,7 @@
         baseURL: "/",
         map: {
           main: '/js/main.js',
-          cache: 'libs/js/cache.min.js'
+          storage: 'libs/js/cache.min.js'
         },
         meta: {
           // our modules have been transpiled to commonJS

@@ -39,10 +39,10 @@ h1 {
 }
 
 h2 {
-  margin: 10px 0;
+  margin: 40px 0 10px;
   font-family:SegoeUI-Bold;
   font-size:20px;
-  color:#666;
+  color:#444;
 }
 
 h3 {
@@ -50,6 +50,13 @@ h3 {
   font-family:SegoeUI-Bold;
   font-size:16px;
   color:#666;
+}
+
+h4 {
+  margin: 0 0 10px;
+  font-family:SegoeUI-Bold;
+  font-size:14px;
+  color:#888;
 }
 
 
@@ -78,7 +85,7 @@ h3 {
     text-decoration: none;
   }
 
-  &.primary {
+  &.btn-add {
     color: #fff;
     background-color: #286090;
     border-color: #204d74;
@@ -88,7 +95,7 @@ h3 {
     }
   }
 
-  &.remove {
+  &.btn-remove {
     color: #fff;
     background-color: #d9534f;
     border-color: #d43f3a;
@@ -127,11 +134,12 @@ input[type="number"] {
 
 /*  radio input  */
 
-.radio {
+.radio,
+.checkbox {
   position: relative;
   margin-bottom: 10px;
 
-  input[type=radio] {
+  input {
     position: absolute;
     display: none;
     visibility: hidden;
@@ -155,24 +163,28 @@ input[type="number"] {
     height: 20px;
     width: 20px;
     border: 3px solid #ccc;
-    border-radius: 100%;
     transition: border .25s linear;
     z-index: 5;
+    &::before {
+      display: block;
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      height: 8px;
+      width: 8px;
+      transition: background 0.25s linear;
+    }
+
+    &.check-radio {
+      border-radius: 100%;
+      &::before {
+        border-radius: 100%;
+      }
+    }
   }
 
-  .check::before {
-    display: block;
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    height: 8px;
-    width: 8px;
-    border-radius: 100%;
-    transition: background 0.25s linear;
-  }
-
-  input[type=radio]:checked ~ .check {
+  input:checked ~ .check {
     border-color: #286090;
     &::before {
       background: #286090;
@@ -189,12 +201,15 @@ input[type="number"] {
 .content {
   position: relative;
   padding: 0 5%;
+  margin-bottom: 60px;
   width: 100%;
   min-height: 100vh;
-}
+  @include clearfix();
 
-.full-data {
-  margin-top: 20px;
+  .insert-data,
+  .get-data {
+    margin-top: 20px;
+  }
 
   .field {
     margin-bottom: 10px;
@@ -202,9 +217,70 @@ input[type="number"] {
 
   .buttons {
     margin-top: 10px;
+
+    .checkbox {
+      margin-left: 20px;
+      display: inline-block;
+    }
   }
 }
 
+
+
+.test {
+  .cache {
+    margin-top: 40px;
+    h2 {
+      margin-top: 10px;
+      span {
+        color: #66afe9;
+        text-decoration: underline;
+      }
+    }
+  }
+  .current-data {
+    @include clearfix();
+
+    & > div {
+      float: left;
+      width: 50%;
+      text-align: center;
+
+      h3 {
+        margin-top: 0;
+      }
+
+      span {
+        color: #33691E;
+        background: #8BC34A;
+      }
+    }
+  }
+
+  .circle-local {
+    margin-bottom: 40px;
+    span {
+      width: 200px;
+      height: 200px;
+      line-height: 200px;
+      color: #33691E;
+      background: #8BC34A;
+    }
+  }
+
+  .circle {
+    width: 200px;
+    height: 200px;
+    line-height: 200px;
+    text-align: center;
+    font-size: 28px;
+    display: block;
+    margin: 0 auto;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+}
 
 
 
@@ -212,7 +288,7 @@ input[type="number"] {
 /* grid */
 
 .col-6 {
-  display: inline-block;
+  float: left;
 }
 
 .col-6 {

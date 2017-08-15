@@ -1,122 +1,125 @@
 //
-// eventEmiter.js
+// persistent.js
 //
 
-/*
- option for cookie:
- name - name cookie
- value - value cookie
- options:
- expires - time life for coolie in seconds
- path - path for cookie
- domain - domain for cookie
- secure - true/false if need send cookie with secure canal
- */
-
-let id;
-const data = {};
-
-const lifeTimeRAM = {};
-const lifeTimeLocalStorage = {};
-
-let busySizeRAM = 0;
-let busySizeLocalStorage = 0;
-
-let maxSizeRAM = 0;
-let maxSizeLocalStorage = 0;
+let counterRequest = 0;
 
 class Persistent {
 
-  constructor(curMaxSizeRAM, curMaxSizeLocalStorage, curId) {
-    id = curId;
-    maxSizeRAM = curMaxSizeRAM;
-    maxSizeLocalStorage = curMaxSizeLocalStorage;
+  constructor(curId, curMaxSize) {
+    this._id = curId;
+    this._maxMemory = curMaxSize;
+    this._busyMemory = 0;
+    this._lifeTime = {};
   }
 
-  get id() { return id };
-  get maxSizeRAM() { return maxSizeRAM };
-  get maxSizeLocalStorage() { return maxSizeLocalStorage };
-
-  get RAM() { return data }; 
-  get localStorage() { return JSON.parse(localStorage.getItem(id))};
-
-  get freeMemoryRAM() { return (maxSizeRAM - busySizeRAM); };
-  get freeMemoryLocalStorage() { return (maxSizeLocalStorage - busySizeLocalStorage); };
+  get maxMemory() { return this._maxMemory; };
+  get busyMemory() { return this._busyMemory; };
+  get freeMemory() { return (this._maxMemory - this._busyMemory); };
 
 
+  /*
+  *   Get data from Local Storage by key
+  *
+  *   @key: when need get value by key (string) || empty: return all data
+  */
+
+  data(key) {
+    counterRequest++;
+
+    if (key) {
+      return JSON.parse(localStorage.getItem(this._id))[key];
+    } else {
+      return JSON.parse(localStorage.getItem(this._id));
+    }
+  };
 
 
 
-  _insertLocalStorage(key, data, sizeData) {
-    const freeSize = this.freeMemoryLocalStorage;
+  /*
+  *   Insert data to Local Storage by key
+  *
+  *   @key: key set to Local Storage (string)
+  *   @data: data set to Local Storage by key (any)
+  *   @sizeData: how much data is occupied (number)
+  */
+
+  insert(key, data, sizeData) {
+    const freeSize = this.freeMemory;
+    const values = this.data();
+
+    if (values && values[key] && JSON.stringify(values[key]) === JSON.stringify(data)) {
+      Storage._setKeyLifeTime(key, sizeData, this._lifeTime);
+      return;
+    }
 
     if (sizeData < freeSize) {
 
-      this._setValuesLocalStorage(key, data, JSON.parse(localStorage.getItem(id)) || {}, sizeData, lifeTimeLocalStorage);
+      counterRequest++;
+      this._setValuesLocalStorage(key, data, values || {}, sizeData);
 
-    } else if (sizeData < maxSizeLocalStorage) {
+    } else if (sizeData < this._maxMemory) {
 
-      const overwriting = Persistent._leastRecentlyUsed(lifeTimeLocalStorage, sizeData - freeSize);
-      const values = this.localStorage();
+      const overwriting = Storage._leastRecentlyUsed(this._lifeTime, sizeData - freeSize);
+      const values = this.data();
 
       for (let [key, obj] of overwriting) {
-        busySizeLocalStorage -= obj.size;
+        this._busyMemory -= obj.size;
         delete values[key];
       }
 
       this._setValuesLocalStorage(key, data, values, sizeData);
 
     } else {
-      console.log('Max size localStorage is less than this data');
+      throw 'Max size localStorage is less than this data';
     }
 
   }
 
-  _setValuesLocalStorage(key, data, values, sizeData, lifeTime) {
+
+  /*
+   *   Remove data from Local Storage by key
+   *
+   *   @key: key from Local Storage (string)
+   */
+
+  remove(key) {
+    const values = this.data();
+
+    if (values[key]) {
+      this._busyMemory -= this._lifeTime[key].size;
+      delete values[key];
+      counterRequest++;
+      localStorage.setItem(this._id, JSON.stringify(values));
+    }
+
+  }
+
+
+
+  /*
+  *   Ancillary function for inserting into Local Storage
+  *
+  *   @key: key set to Local Storage (string)
+  *   @data: data set to Local Storage by key (any)
+  *   @values: values from Local Storage by key (any)
+  *   @sizeData: how much data is occupied (number)
+  *
+  */
+
+
+  _setValuesLocalStorage(key, data, values, sizeData) {
     values[key] = data;
-    busySizeLocalStorage += sizeData;
-    this._setKeyLifeTime(key, sizeData, lifeTime);
-    localStorage.setItem(id, JSON.stringify(values));
+    this._busyMemory += sizeData;
+    Storage._setKeyLifeTime(key, sizeData, this._lifeTime);
+    counterRequest++;
+    localStorage.setItem(this._id, JSON.stringify(values));
   }
 
 
-  _setKeyLifeTime(key, sizeData, lifeTime) {
-    lifeTime[key] = {
-      size: sizeData ,
-      time: new Date().getTime()
-    };
-  }
+  // static methods
 
+  static get counterRequest() { return counterRequest; }
 
-
-
-  static _leastRecentlyUsed(lifeTime, needSize) {
-
-    let result = [];
-    let sortable = [];
-    let curSizeFree = 0;
-
-    for (let key in lifeTime) {
-      sortable.push([key, lifeTime[key]]);
-    }
-
-    sortable.sort(function(a, b) {
-      return a[1].time - b[1].time;
-    });
-
-    for (let [key, obj] of sortable) {
-      result.push([key, obj]);
-      curSizeFree += obj.size;
-      if (curSizeFree >= needSize) {
-        break;
-      }
-    }
-
-    return result;
-  }
-
-  static _roughSizeOfObject(str) {
-    return JSON.stringify(str).length * 2;
-  }
 
 }
