@@ -21,7 +21,7 @@ export default class Storage {
   constructor({ sizeRAM, sizeLocal, id = idMemory }) {
 
     if (Storage.freeMemoryLocal < sizeLocal) {
-      throw 'Memory is full, remove cache!';
+      throw 'Memory local is full, remove cache!';
     }
 
     this._id = id;

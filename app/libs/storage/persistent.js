@@ -110,7 +110,7 @@ class Persistent {
       this._setValuesLocalStorage(key, data, values, sizeData);
 
     } else {
-      throw 'Max size localStorage is less than this data';
+      throw 'Max size Persistent is less than this data';
     }
 
   }
