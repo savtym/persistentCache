@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/main.min.css">
     <title>Management</title>
 </head>
 <body>
@@ -128,7 +128,7 @@
                 </div>
 
                 <div class="percent-cache">
-                    <h3>Counters and percent hit / miss cache</h3>
+                    <h3>Counters and percent hit/miss cache</h3>
                     
                     <table>
                         <thead>
@@ -160,21 +160,22 @@
             </div>
 
         </div>
+        </div>
     </div>
 
 
 
 
-    <script src="/libs/js/polyfill.js"></script>
-    <script src="/libs/js/system.js"></script>
+    <script src="/libs/js/polyfill.min.js"></script>
+    <script src="/libs/js/system.min.js"></script>
 
     <script>
       // set our baseURL reference path/
       System.config({
         baseURL: "/",
         map: {
-          main: '/js/main.js',
-          storage: 'libs/js/cache.min.js'
+          main: '/js/main.min.js',
+          storage: 'libs/js/storage.min.js'
         },
         meta: {
           // our modules have been transpiled to commonJS

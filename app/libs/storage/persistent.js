@@ -7,6 +7,14 @@ let maxMemoryDefault = 16384;
 
 class Persistent {
 
+
+  /*
+   *   Constructor of Persistent
+   *
+   *   @curId: id
+   *   @curMaxSize: max memory Local Storage
+   */
+
   constructor(curId, curMaxSize) {
     this._id = curId;
     this.maxMemory = curMaxSize || maxMemoryDefault;
@@ -15,10 +23,19 @@ class Persistent {
     this.data() || localStorage.setItem(this._id, '{}');
   }
 
+
+  /*
+   *   Getters
+   */
+
   get maxMemory() { return this._maxMemory; };
   get busyMemory() { return (Storage.sizeOf(localStorage.getItem(this._id))); };
   get freeMemory() { return (this._maxMemory - Storage.sizeOf(localStorage.getItem(this._id))); };
 
+
+  /*
+   *   Setters
+   */
 
   set maxMemory(value) {
     value = (typeof value === 'number') ? value : parseInt(value);
@@ -30,7 +47,7 @@ class Persistent {
         const overwriting = Storage._leastRecentlyUsed(this._lifeTime, this.busyMemory - value);
         const values = this.data();
 
-        for (let [key, obj] of overwriting) {
+        for (let [key] of overwriting) {
           delete this._lifeTime[key];
           delete values[key];
         }
@@ -40,6 +57,7 @@ class Persistent {
       }
     }
   }
+
 
   /*
   *   Get data from Local Storage by key
@@ -84,7 +102,7 @@ class Persistent {
       const overwriting = Storage._leastRecentlyUsed(this._lifeTime, sizeData - freeSize);
       const values = this.data();
 
-      for (let [key, obj] of overwriting) {
+      for (let [key] of overwriting) {
         delete this._lifeTime[key];
         delete values[key];
       }
@@ -112,9 +130,24 @@ class Persistent {
       counterRequest++;
       localStorage.setItem(this._id, JSON.stringify(values));
     }
-
   }
 
+
+  /*
+  *     Clear data from Local Storage
+  */
+
+  clear() {
+    this._lifeTime = {};
+    counterRequest++;
+    localStorage.setItem(this._id, '{}');
+  }
+
+
+
+  /*
+   *   private methods
+   */
 
 
   /*
@@ -137,6 +170,10 @@ class Persistent {
 
 
   // static methods
+
+  /*
+  *    Getters
+  */
 
   static get counterRequest() { return counterRequest; }
 

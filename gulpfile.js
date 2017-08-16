@@ -10,37 +10,69 @@ const notify = require("gulp-notify");
 const notifier = require('node-notifier');
 const connect = require('gulp-connect');
 
-/* babel */
+
 const babel = require('gulp-babel');
 const jsmin = require('gulp-jsmin');
-
-
-/* native build in single file */
 const concat = require('gulp-concat');
-// const autopolyfiller = require('gulp-autopolyfiller');
 
 
 
 
-//html
-gulp.task('html', function() {
+/*
+ *   html
+ */
+
+gulp.task('html', () => {
   return gulp.src(`${ path }/**/*.html`)
     .pipe(gulp.dest(`${ pathBuild }/`))
     .pipe(connect.reload());
 });
 
-// scss
+
+/*
+ *   scss
+ */
+
 const sass = require('gulp-sass');
+const cleanCSS = require('gulp-clean-css');
+const autoprefixer = require('gulp-autoprefixer');
 
 gulp.task('scss', () => {
   return gulp.src(`${ path }/scss/main.scss`)
-    .pipe(sass().on('error', sass.logError))
+    .pipe(sass().on('error', notify.onError( function (error) {
+      return "Compile Error: " + error.message;
+    })))
+    .pipe(autoprefixer({
+      browsers: ['> 1%', 'IE 10']
+    }))
+    .pipe(cleanCSS())
+    .pipe(rename({
+      suffix: '.min'
+    }))
     .pipe(gulp.dest(`${ pathBuild }/css/`))
     .pipe(connect.reload());
 });
 
 
-gulp.task('js-cache', () => {
+/*
+*    js-lint
+*/
+
+const eslint = require('gulp-eslint');
+
+gulp.task('js-lint', () => {
+  return gulp.src([`${ path }/js/**/*.js`])
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
+});
+
+
+/*
+ *   js-storage
+ */
+
+gulp.task('js-storage', ['js-lint'], () => {
   let isBabel = babel({
     presets: [require('babel-preset-es2015')]
   });
@@ -51,26 +83,21 @@ gulp.task('js-cache', () => {
     notifier.notify(`error JS: ${ e.message }`);
   });
 
-  gulp.src(`${ path }/libs/cache/**/*.js`)
+  gulp.src(`${ path }/libs/storage/**/*.js`)
     .pipe(isBabel)
-    .pipe(concat('cache.min.js'))
-    // .pipe(autopolyfiller(`./js/autopolyfiller.js`, {
-    //   browsers: ['last 2 version', 'ie 9']
-    // }))
-    // .pipe(jsmin())
+    .pipe(concat('storage.min.js'))
     .pipe(rename({dirname: ''}))
-    // .pipe(autopolyfiller(`./js/autopolyfiller.js`, {
-    //   browsers: ['last 2 version', 'ie 9']
-    // }))
-    // .pipe(jsmin())
-    // .pipe(rename({dirname: ''}))
+    .pipe(jsmin())
     .pipe(gulp.dest(`${ pathBuild }/libs/js`))
     .pipe(connect.reload());
-    // .pipe(open({uri: recacheURL}))
 });
 
 
-gulp.task('js', () => {
+/*
+*   js
+*/
+
+gulp.task('js', ['js-lint'], () => {
   let isBabel = babel({
     presets: [require('babel-preset-es2015')]
   });
@@ -83,24 +110,42 @@ gulp.task('js', () => {
 
   gulp.src(`${ path }/js/**/*.js`)
     .pipe(isBabel)
-    // .pipe(autopolyfiller(`./js/autopolyfiller.js`, {
-    //   browsers: ['last 2 version', 'ie 9']
-    // }))
-    // .pipe(jsmin())
-    // .pipe(autopolyfiller(`./js/autopolyfiller.js`, {
-    //   browsers: ['last 2 version', 'ie 9']
-    // }))
-    // .pipe(jsmin())
-    // .pipe(rename({dirname: ''}))
+    .pipe(rename({suffix: '.min'}))
+    .pipe(jsmin())
     .pipe(gulp.dest(`${ pathBuild }/js`))
     .pipe(connect.reload());
-  // .pipe(open({uri: recacheURL}))
 });
 
 
-/* connect server */
+/*
+*   js-libs
+*/
 
-gulp.task('connect', function() {
+gulp.task('js-libs', () => {
+  let isBabel = babel({
+    presets: [require('babel-preset-es2015')]
+  });
+
+  isBabel.on('error', function(e) {
+    console.log(e);
+    isBabel.end();
+    notifier.notify(`error JS: ${ e.message }`);
+  });
+
+  gulp.src(`${ path }/libs/js/**/*.js`)
+    .pipe(isBabel)
+    .pipe(rename({dirname: '', suffix: '.min'}))
+    .pipe(jsmin())
+    .pipe(gulp.dest(`${ pathBuild }/libs/js`))
+    .pipe(connect.reload());
+});
+
+
+/*
+*   connect server
+*/
+
+gulp.task('connect', () => {
   connect.server({
     root: pathBuild,
     port: port,
@@ -108,14 +153,18 @@ gulp.task('connect', function() {
   });
 });
 
-/* watch */
+
+/*
+*   watch
+*/
+
 gulp.task('watch', () => {
   gulp.watch([`${ path }/js/**/*`], ['js']);
-  gulp.watch([`${ path }/libs/cache/**/*`], ['js-cache']);
+  gulp.watch([`${ path }/libs/cache/**/*`], ['js-storage']);
   gulp.watch([`${ path }/**/*.scss`], ['scss']);
   gulp.watch([`${ path }/**/*.html`], ['html']);
 });
 
 
 /* default */
-gulp.task('default', ['connect', 'html', 'js-cache', 'js', 'scss', 'watch']);
+gulp.task('default', ['connect', 'js-libs', 'html', 'js-storage', 'js', 'scss', 'watch']);

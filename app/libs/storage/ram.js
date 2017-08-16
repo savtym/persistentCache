@@ -1,8 +1,17 @@
-
+//
+// ram.js
+//
 
 const maxMemoryDefault = 16384;
 
 class RAM {
+
+
+  /*
+   *   Constructor of RAM
+   *
+   *   @curMaxSize: max memory RAM
+   */
 
 	constructor(curMaxSize) {
     this.maxMemory = curMaxSize || maxMemoryDefault;
@@ -12,10 +21,18 @@ class RAM {
 	}
 
 
+	/*
+	*   Getters
+	*/
+
   get maxMemory() { return this._maxMemory };
   get busyMemory() { return this._busyMemory };
   get freeMemory() { return (this.maxMemory - this._busyMemory) };
 
+
+  /*
+   *   Setters
+   */
 
   set maxMemory(value) {
     value = (typeof value === 'number') ? value : parseInt(value);
@@ -100,6 +117,17 @@ class RAM {
       this._busyMemory -= this._lifeTime[key].size;
       delete this._data[key];
     }
+  }
+
+
+  /*
+  *   Clear data from RAM
+  */
+
+  clear() {
+    this._busyMemory = 0;
+    this._lifeTime = {};
+    this._data = {};
   }
   
 }

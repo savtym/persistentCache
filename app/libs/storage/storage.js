@@ -5,25 +5,30 @@
 const globalSizeLocal = 5242880; // 5MB
 
 let idMemory = 1;
-
-
-let storages = {};
-
+let storage = {};
 
 export default class Storage {
+
+
+  /*
+  *   Constructor of Storage
+  *
+  *   @sizeRam: max memory RAM
+  *   @sizeLocal: max memory Local Storage
+  *   @id: id
+  */
 
   constructor({ sizeRAM, sizeLocal, id = idMemory }) {
 
     if (Storage.freeMemoryLocal < sizeLocal) {
-      throw 'Memory is full, clear cache!';
+      throw 'Memory is full, remove cache!';
     }
-
 
     this._id = id;
     this._ram = new RAM(sizeRAM);
     this._persistent = new Persistent(id, sizeLocal);
 
-    storages[id] = this;
+    storage[id] = this;
 
     if (idMemory === id) {
       idMemory++;
@@ -31,11 +36,13 @@ export default class Storage {
   }
 
 
-  get id() { return this._id };
+  /*
+   *   Getters
+   */
 
-  get ram() { return this._ram };
-  get persistent() { return this._persistent };
-
+  get id() { return this._id; }
+  get ram() { return this._ram; }
+  get persistent() { return this._persistent; }
 
 
 	/*
@@ -46,19 +53,16 @@ export default class Storage {
 
 	data(key) {
 
-
 		let result;
-		const busyMemory = this.busyMemory;
 
 		if (typeof key !== 'undefined') {
 
       key = (typeof key === 'string') ? key : key.toString();
-
       result = this.ram.data(key);
 
-      if (!result) {
+      if (typeof result === 'undefined') {
         result = this.persistent.data(key);
-        if (result) {
+        if (typeof result !== 'undefined') {
           this.ram.insert(key, result, Storage.sizeOf(result))
         }
 			}
@@ -71,9 +75,7 @@ export default class Storage {
 		}
 
 		return result;
-
 	}
-
 
 
 	/*
@@ -105,6 +107,10 @@ export default class Storage {
 
 	remove(key) {
 
+	  if (typeof key === 'undefined') {
+	    throw 'Key is undefined';
+    }
+
     key = (typeof key === 'string') ? key : key.toString();
 
     this.ram.remove(key);
@@ -114,21 +120,20 @@ export default class Storage {
 
 	/*
 	 *   Clear cache by Local Storage and RAM
-	 *
-	 *   @cache: link to storage (link (class => function))
 	 */
 
   clear() {
-    currentSizeMemoryRAM -= this.ram.maxMemory;
-    currentSizeMemoryPersistent -= this.persistent.maxMemory;
-
-    localStorage.removeItem(this._id);
-    delete storages[this._id];
+    this._ram.clear();
+    this._persistent.clear();
   }
 
 
   // static methods
 
+
+  /*
+  *   Getters
+  */
 
 	/*
 	 *   Free memory space in the Local storage, by default in browsers is available 5 MB on one tab
@@ -146,14 +151,44 @@ export default class Storage {
 
 
 
+  /*
+   *   Clear By Id cache by Local Storage and RAM
+   *
+   *   @id: id storage (string || number)
+   */
+
   static clearById(id) {
+
+    if (typeof id !== 'number' && typeof id !== 'string') {
+      throw 'Id is not string or number';
+    }
+
+    if (storage[id]) {
+      storage[id]._ram.clear();
+      storage[id]._persistent.clear();
+    } else {
+      localStorage.removeItem(id);
+    }
+  }
+
+
+  /*
+   *   Remove By Id cache by Local Storage and RAM
+   *
+   *   @id: storage (string || number)
+   */
+
+  static removeById(id) {
 
   	if (typeof id !== 'number' && typeof id !== 'string') {
   		throw 'Id is not string or number';
 		}
 
-  	if (storages[id]) {
-  		storages[id].clear();
+  	if (storage[id]) {
+      storage[id].clear();
+      storage[id]._ram = null;
+      storage[id]._persistent = null;
+      delete storage[id];
 		} else {
       localStorage.removeItem(id);
     }
@@ -165,18 +200,67 @@ export default class Storage {
 	 *		Clear full data from RAM and Local Storage
 	 */
 
-  static clear() {
-    currentSizeMemoryRAM = 0;
-    currentSizeMemoryPersistent = 0;
+  static remove() {
 
-    for (let storage of storages) {
-      storage = null;
+    for (let cache of storage) {
+      cache.clear();
+      cache._ram = null;
+      cache._persistent = null;
+      cache = null;
     }
 
-    storages = [];
-
+    storage = [];
     localStorage.clear();
   }
+
+
+  /*
+   *   Size Of obj set key into life time object
+   *
+   *   @obj: how much memory (any)
+   *
+   */
+
+  static sizeOf(obj) {
+    let bytes = 0;
+
+    if (obj !== null && obj !== undefined) {
+      switch (typeof obj) {
+        case 'number':
+          bytes += 8;
+          break;
+        case 'string':
+          bytes += obj.length * 2;
+          break;
+        case 'boolean':
+          bytes += 4;
+          break;
+        case 'object':
+          const objClass = Object.prototype.toString.call(obj).slice(8, -1);
+
+          if (objClass === 'Object' || objClass === 'Array') {
+            for (let key in obj) {
+              if (!obj.hasOwnProperty(key)) {
+                continue;
+              }
+              bytes += Storage.sizeOf(obj[key]);
+            }
+
+          } else  {
+            bytes += JSON.stringify(obj).length * 2;
+          }
+
+          break;
+      }
+    }
+
+    return bytes;
+  };
+
+
+  /*
+  *   private methods
+  */
 
 
 	/*
@@ -194,48 +278,6 @@ export default class Storage {
       time: new Date().getTime()
     };
   }
-
-
-	/*
-	 *   Ancillary function for set key into life time object
-	 *
-	 *   @obj: how much memory (any)
-	 *
-	 */
-
-  static sizeOf(obj) {
-    let bytes = 0;
-
-		if (obj !== null && obj !== undefined) {
-			switch (typeof obj) {
-				case 'number':
-					bytes += 8;
-					break;
-				case 'string':
-					bytes += obj.length * 2;
-					break;
-				case 'boolean':
-					bytes += 4;
-					break;
-				case 'object':
-					const objClass = Object.prototype.toString.call(obj).slice(8, -1);
-					if (objClass === 'Object' || objClass === 'Array') {
-						for (let key in obj) {
-							if (!obj.hasOwnProperty(key)) {
-                continue;
-							}
-              bytes += Storage.sizeOf(obj[key]);
-						}
-
-					} else  {
-						bytes += JSON.stringify(obj).length * 2;
-          }
-					break;
-			}
-		}
-
-		return bytes;
-	};
 
 
   /*

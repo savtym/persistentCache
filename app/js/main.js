@@ -1,4 +1,6 @@
-
+//
+// main.js
+//
 
 import Storage from 'storage';
 
@@ -62,7 +64,7 @@ export class Main {
     Main.eventListener(btnStartGet, 'click', Main.startTestGet);
     Main.eventListener(btnStopGet, 'click', Main.stopTestGet);
 
-    Main.eventListener(btnRemoveCache, 'click', Main.removeCache);
+    Main.eventListener(btnRemoveCache, 'click', Main.clearCache);
 
 
     cache = new Storage({ id: 'test-drive'});
@@ -76,12 +78,22 @@ export class Main {
 
   }
 
+
+  /*
+  *   Add input filed get-block (Listener)
+  */
+
   addFiledGet() {
     const parent = this.closest('.work-data').querySelector('.fields');
     const tmp = document.createElement('template');
     tmp.innerHTML = addFiledGet;
     parent.appendChild(tmp.content);
   }
+
+
+  /*
+   *   Add input filed insert-block (Listener)
+   */
 
   addFiledInsert() {
     const parent = this.closest('.work-data').querySelector('.fields');
@@ -90,25 +102,36 @@ export class Main {
     parent.appendChild(tmp.content);
   }
 
+
+  /*
+   *   Remove input filed insert-block and get-block (Listener)
+   */
+
   removeField() {
     const parent = this.closest('.field');
     parent.outerHTML = '';
   }
 
 
+  /*
+  *   Static methods
+  */
+
+
+  /*
+   *   Start test by click-button-insert (Listener)
+   */
+
   static startTestInsert() {
 
     this.classList.add('active');
-
-    let counterPairs = 0;
     let data = [];
 
+    // push in array-data values and keys
     if (document.querySelector('[name="full_data"]:checked').value === 'insert') {
 
       const keys = document.querySelectorAll('.insert .fields [name="key"]');
       const values = document.querySelectorAll('.insert .fields [name="value"]');
-
-      counterPairs = keys.length;
 
       let [result, error] = Main._parseKeyValue(keys, values);
 
@@ -120,8 +143,6 @@ export class Main {
       data = result;
 
     } else {
-
-      counterPairs = randomSize;
 
       for (let i = 0; i < randomSize; i++) {
         data.push({
@@ -146,6 +167,10 @@ export class Main {
   }
 
 
+  /*
+   *   Stop test by click-button-insert (Listener)
+   */
+
   static stopTestInsert() {
     if (timerInsert) {
       clearInterval(timerInsert);
@@ -156,6 +181,9 @@ export class Main {
   }
 
 
+  /*
+   *   Start test by click-button-get (Listener)
+   */
 
   static startTestGet() {
     this.classList.add('active');
@@ -164,10 +192,10 @@ export class Main {
 
     const counterPairs = keys.length;
     const data = [];
-    const button = this;
 
     let error = false;
 
+    // push in array-data keys
     for (let i = 0; i < counterPairs; i++) {
       if (keys[i].value.length !== 0) {
 
@@ -181,7 +209,7 @@ export class Main {
     }
 
     if (error) {
-      this.classList.remove('active')
+      this.classList.remove('active');
       return;
     }
 
@@ -193,6 +221,11 @@ export class Main {
 
   }
 
+
+  /*
+   *   Stop test by click-button-get (Listener)
+   */
+
   static stopTestGet() {
     if (timerGet) {
       clearInterval(timerGet);
@@ -203,22 +236,38 @@ export class Main {
   }
 
 
+  /*
+   *   Clear cache by click-button-clear (Listener)
+   */
 
-  static removeCache() {
+  static clearCache() {
     const parent = this.closest('.cache');
     const id = parent.getAttribute('data-id');
     Storage.clearById(id);
 
-    testTable.innerHTML = '';
-    testRAM.innerHTML = '';
-    testPersistent.innerHTML = '';
+    testTable.querySelectorAll('tr:not(.last)').forEach((dom) => {
+      dom.innerHTML = '';
+    });
+
     testPairsRAM.textContent = 0;
-    testPairsLocal.textContent = 0
-    testCurrentDataLocal.textContent = Main.formatByteSize(Storage.freeMemoryLocal);
+    testPairsLocal.textContent = 0;
+    testRAM.textContent = Main.formatByteSize(cache.ram.freeMemory);
+    testPersistent.textContent = Main.formatByteSize(cache.persistent.freeMemory);
+
+    const last = document.querySelector('.cache table .last');
+
+    last.querySelector(':nth-child(3)').textContent = '';
+    last.querySelector(':nth-child(4)').textContent = '';
+    last.querySelector(':nth-child(5)').textContent = '';
+
     Main.localStorage();
 
   }
 
+
+  /*
+   *   Get list Local Storage
+   */
 
   static localStorage() {
     let strHTML = '';
@@ -234,17 +283,32 @@ export class Main {
   }
 
 
+  /*
+   *   Get format in bytes
+   *
+   *   @bytes: number bytes (number)
+   */
 
   static formatByteSize(bytes) {
-    if (bytes < 1024) return bytes + " bytes";
-    else if (bytes < 1048576) return(bytes / 1024).toFixed(3) + " KiB";
-    else if (bytes < 1073741824) return(bytes / 1048576).toFixed(3) + " MiB";
-    else return (bytes / 1073741824).toFixed(3) + " GiB";
+    let result = '';
+
+    if (bytes < 1024) {
+      result = `${ bytes } bytes`;
+    } else if (bytes < 1048576) {
+      result = `${ (bytes / 1024).toFixed(3) } KiB`;
+    } else if (bytes < 1073741824) {
+      result = `${ (bytes / 1048576).toFixed(3) } MiB`;
+    } else {
+      result = `${ (bytes / 1073741824).toFixed(3) } GiB`;
+    }
+
+    return result;
   };
 
 
+
   /*
-   event listener
+   *   Add or Remove event listener
    */
 
   static eventListener(str, event, func, isAddEvent = true) {
@@ -269,7 +333,17 @@ export class Main {
   }
 
 
+  /*
+   *   Private methods
+   */
 
+
+  /*
+   *   Parse keys and values
+   *
+   *   @keys: array dom
+   *   @values: array dom
+   */
 
   static _parseKeyValue(keys, values) {
     const result = [];
@@ -302,6 +376,15 @@ export class Main {
   }
 
 
+  /*
+   *    Insert row in table-dom
+   *
+   *    @key: key-cache or Not value (string || number)
+   *    @value: value-cache (any)
+   *    @insert: True or False (string)
+   *    @get: True or False (string)
+   *    @hitMiss: Hit or Miss or Not value (string)
+   */
 
   static _insertRowInTable(key, value, insert, get, hitMiss) {
     const tmp = document.createElement('template');
@@ -343,6 +426,13 @@ export class Main {
   }
 
 
+  /*
+   *    Insert data to cache
+   *
+   *    @index: counter position in array data (string || number)
+   *    @data: array of object { key: (string || number), value: (any) } (array)
+   */
+
   static _insertDataToCache(index, data) {
     const obj = data[index];
 
@@ -368,13 +458,20 @@ export class Main {
     testPairsLocal.textContent = Object.keys(cache.persistent.data()).length;
 
     testRAM.textContent = Main.formatByteSize(cache.ram.freeMemory);
-    testPersistent.textContent = Main.formatByteSize(cache.persistent.freeMemory)
+    testPersistent.textContent = Main.formatByteSize(cache.persistent.freeMemory);
     testCurrentDataLocal.textContent = Main.formatByteSize(Storage.freeMemoryLocal);
 
-    const memoryList = document.querySelector(`.cache[data-id="test-drive"] .memory`);
+    const memoryList = document.querySelector('.cache[data-id="test-drive"] .memory');
     memoryList.textContent = Main.formatByteSize(cache.persistent.busyMemory);
   }
 
+
+  /*
+   *    Get data to cache
+   *
+   *    @index: counter position in array data (string || number)
+   *    @data: array of string (array)
+   */
 
   static _getDataFromCache(index, data) {
     const key = data[index];
@@ -397,7 +494,7 @@ export class Main {
       testPairsRAM.textContent = Object.keys(cache.ram.data()).length;
     }
 
-    Main._insertRowInTable(key, (value) ? value : 'Not value', 'False', 'True', (value) ? hitMiss : 'Not value');
+    Main._insertRowInTable(key, (typeof value !== 'undefined') ? value : 'Not value', 'False', 'True', (typeof value !== 'undefined') ? hitMiss : 'Not value');
   }
 
 }
