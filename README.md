@@ -69,4 +69,4 @@ $ gulp
 
 ## Автор
 ### Савицкий Тимофей
-[![N|Solid](http://findicons.com/files/icons/2796/metro_uinvert_dock/128/github.png)](github.com/savtym)
+[![N|Solid](http://findicons.com/files/icons/2796/metro_uinvert_dock/128/github.png)](https://github.com/savtym/)
