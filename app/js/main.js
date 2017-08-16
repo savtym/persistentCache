@@ -418,10 +418,11 @@ export class Main {
     });
 
     const last = document.querySelector('.cache table .last');
+    const hitPercent = (hit / (hit + miss) * 100).toFixed(1);
 
     last.querySelector(':nth-child(3)').textContent = counterInsert;
     last.querySelector(':nth-child(4)').textContent = counterGet;
-    last.querySelector(':nth-child(5)').textContent = `${ hit }/${ miss } hit: ${ (hit / (hit + miss) * 100).toFixed(1) }%`;
+    last.querySelector(':nth-child(5)').textContent = `${ hit }/${ miss } hit: ${ (isNaN(hitPercent) ? 0 : hitPercent) }%`;
 
   }
 
