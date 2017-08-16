@@ -70,7 +70,7 @@ $ gulp
 
 ## Демо
 
-	[Перейти по ссылке](http://savtym.pp.ua/test/storage/)
+[Перейти по ссылке](http://savtym.pp.ua/test/storage/)
 
 
 ## Автор
