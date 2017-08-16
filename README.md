@@ -68,6 +68,11 @@ $ gulp
 ```
 Создается папка build в корне проекта, что и является девелопмент-версия, которая минимизированная.
 
+## Демо
+
+	[Перейти по ссылке](http://savtym.pp.ua/test/storage/)
+
+
 ## Автор
 ### Савицкий Тимофей
 [![N|Solid](http://findicons.com/files/icons/2796/metro_uinvert_dock/128/github.png)](https://github.com/savtym/)
